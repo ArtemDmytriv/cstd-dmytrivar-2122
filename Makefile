@@ -1,16 +1,26 @@
-CXX=g++
-CXXFLAGS=-g -Wall -Wpedantic -Werror
+CC = g++
+CFLAGS = -g -Wall -Wpedantic -Werror -I.
 
-SRCDIR=src
+SRCDIR = src
+OBJDIR = bin
 
-SOURCES=$(wildcard $(SRCDIR)/*.c)
+
 PROJ_NAME=battle_ship.exe
 
-all : $(PROJ_NAME)
+SOURCES := $(wildcard $(SRCDIR)/*.c)
+OBJECTS := $(SOURCES:$(SRCDIR)/%.c=$(OBJDIR)/%.o)
 
-$(PROJ_NAME) : $(SOURCES)
-	$(CXX) $(CXXFLAGS) $^ -o $@
+all : $(OBJDIR) $(PROJ_NAME) 
+
+$(PROJ_NAME) : $(OBJECTS)
+	$(CC) $(CFLAGS) $(LFLAGS) $^ -o $@
+
+$(OBJECTS) : $(OBJDIR)/%.o : $(SRCDIR)/%.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(OBJDIR) : 
+	@if not exist $(OBJDIR) mkdir $(OBJDIR)
 
 .PHONY: clean
 clean :
-	del *.o $(PROJ_NAME)
+	del $(OBJDIR)\*.o $(PROJ_NAME)
