@@ -1,4 +1,5 @@
 #include "battle_ship.h"
+#include "battle_ship_ai.h"
 #include "battle_cli.h"
 
 #include <stdlib.h>
@@ -236,41 +237,90 @@ int board_set_rand_ships(battle_board *brd, const uint8_t *ship_gen_counts) {
 
 void game_loop(battle_board *brd1, PLAYER_TYPE pt1, battle_board *brd2, PLAYER_TYPE pt2) {
     int8_t setup_flag = 1;
+
+    int *AI1_moves, *AI2_moves;
+    int AI1_moves_count, AI2_moves_count;
+
     while (setup_flag) {
         uint8_t counts[SHIP_MAX_SIZE] = {4, 3, 2, 1}; 
         // 1st player set ships  
         board_set_rand_ships(brd1, counts);
         printf("Player 1 table\n");
         board_print_both(brd1);
+
+        if (pt1 == AI_PLAYER_TYPE) {
+            AI1_moves_count = brd2->size * brd2->size;
+            AI1_moves = (int*)malloc(AI1_moves_count * sizeof(int));
+            for (int i = 0; i < AI1_moves_count; i++) {
+                AI2_moves[i] = i;
+            }
+        }
         // 2nd player set ships
         board_set_rand_ships(brd2, counts);
         printf("Player 2 table\n");
         board_print_both(brd2);
+
+        if (pt2 == AI_PLAYER_TYPE) {
+            AI2_moves_count = brd2->size * brd2->size;
+            AI2_moves = (int*)malloc(AI2_moves_count * sizeof(int));
+            for (int i = 0; i < AI2_moves_count; i++) {
+                AI2_moves[i] = i;
+            }
+        }
         setup_flag = 0;
     }
+
     uint8_t winner = 0;
     uint8_t row, col;
+    SHOOT_RESULT AI1_last_res = MISSED_HIT;
+    //            AI2_last_res = MISSED_HIT;
+
+    AI_params aip1;
+    //AI_params aip2;
+    
     while (!winner) {
         // player brd1
         while(true) {
-            board_print_battlefield(brd1, brd2);
-            printf("Player 1 turns\n");
-            if (get_coor_user_input(stdin, brd2->size, &row, &col) < 0)
-                continue;
-            // turn 1st player
-            SHOOT_RESULT status_shot = board_fire_at(brd2, row, col);
-            if (status_shot == SUCCESS_FINISH_HIT) {
-                if (brd2->ship_counts[SHIP_COUNT_POS] == 0) {
-                    winner = 1;
-                    break;
+            if (pt1 == HUMAN_PLAYER_TYPE) {
+                board_print_battlefield(brd1, brd2);
+                printf("Player 1 turns\n");
+                if (get_coor_user_input(stdin, brd2->size, &row, &col) < 0)
+                    continue;
+                // turn 1st player
+                SHOOT_RESULT status_shot = board_fire_at(brd2, row, col);
+                if (status_shot == SUCCESS_FINISH_HIT) {
+                    if (brd2->ship_counts[SHIP_COUNT_POS] == 0) {
+                        winner = 1;
+                        break;
+                    }
+                    continue;
                 }
-                continue;
+                if (status_shot != MISSED_HIT) // Shoot again
+                    continue;
+                break;
             }
-            if (status_shot != MISSED_HIT) {
-                // Shoot again
-                continue;
+            else // AI
+            {
+                if (AI1_last_res != SUCCESS_HIT && !aip1.need_to_finish_ship) {
+                    AI1_last_res = battle_AI_rand_fire(brd2, AI1_moves, &AI1_moves_count, &aip1);
+                }
+                else {
+                    aip1.need_to_finish_ship = true;
+                    AI1_last_res = battle_AI_continue_fire(brd2, &aip1);
+                }
+                if (AI1_last_res == SUCCESS_FINISH_HIT) {
+                    aip1.need_to_finish_ship = false;
+                    aip1.ship_direct = -1;
+                    if (brd2->ship_counts[SHIP_COUNT_POS] == 0) {
+                        winner = 1;
+                        break;
+                    }
+                    continue;
+                }
+                if (AI1_last_res != MISSED_HIT) // Shoot again
+                    continue;
+                break;
             }
-            break;
         }
         // turn 2nd player
         while(true) {

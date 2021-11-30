@@ -4,7 +4,6 @@ CFLAGS = -g -Wall -Wpedantic -Werror -I.
 SRCDIR = src
 OBJDIR = bin
 
-
 PROJ_NAME=battle_ship.exe
 
 SOURCES := $(wildcard $(SRCDIR)/*.c)
@@ -19,8 +18,8 @@ $(OBJECTS) : $(OBJDIR)/%.o : $(SRCDIR)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(OBJDIR) : 
-	@if not exist $(OBJDIR) mkdir $(OBJDIR)
+	mkdir -p $(OBJDIR)
 
 .PHONY: clean
 clean :
-	del $(OBJDIR)\*.o $(PROJ_NAME)
+	rm -rf $(OBJDIR)/*.o $(PROJ_NAME)
