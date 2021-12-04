@@ -97,12 +97,12 @@ int get_coor_user_input(FILE *in, uint8_t size, uint8_t *row, uint8_t *col) {
     char col_letter = -1;
     printf("Enter cell: ");
     fgets(buffer, BUFLEN, in);
-    if (sscanf(buffer, "%c%hhu", &col_letter, row) != 2) {// || sscanf(buffer, "%hhu%c", row, &col_letter) != 2) {
-        if (sscanf(buffer, "%hhu%c", row, &col_letter) != 2) {
+    if (sscanf(buffer, "%hhu%c", row, &col_letter) != 2) {
+        if (sscanf(buffer, "%c%hhu", &col_letter, row) != 2) {
             return -1;
         }
     }
-    if (!isalpha(col_letter) || toupper(col_letter) - 'A' > size || *row > size) {
+    if (!isalpha(col_letter) || toupper(col_letter) - 'A' >= size || *row > size) {
         return -1;
     }
     *col = toupper(col_letter) - 'A';
