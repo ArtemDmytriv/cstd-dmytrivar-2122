@@ -1,12 +1,12 @@
 CXX = g++
-CFLAGS = -g -Wall -std=c++11 -Wpedantic -Werror -I.
+CFLAGS = -g -Wall -std=c++11 -Wpedantic -Werror -Iinclude -DCLI_COMPILATION
 
 SRCDIR = src
 OBJDIR = bin
 
 PROJ_NAME=battle_ship
 
-SOURCES := $(wildcard $(SRCDIR)/*.cpp)
+SOURCES := src/battle_ship.cpp src/battle_main.cpp src/battle_cli.cpp src/battle_ship_ai.cpp
 OBJECTS := $(SOURCES:$(SRCDIR)/%.cpp=$(OBJDIR)/%.o)
 
 all : $(OBJDIR) $(PROJ_NAME) 
