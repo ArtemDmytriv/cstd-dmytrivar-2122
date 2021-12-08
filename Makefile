@@ -1,21 +1,21 @@
-CC = g++
-CFLAGS = -g -Wall -Wpedantic -Werror -I.
+CXX = g++
+CFLAGS = -g -Wall -std=c++11 -Wpedantic -Werror -I.
 
 SRCDIR = src
 OBJDIR = bin
 
-PROJ_NAME=battle_ship.exe
+PROJ_NAME=battle_ship
 
-SOURCES := $(wildcard $(SRCDIR)/*.c)
-OBJECTS := $(SOURCES:$(SRCDIR)/%.c=$(OBJDIR)/%.o)
+SOURCES := $(wildcard $(SRCDIR)/*.cpp)
+OBJECTS := $(SOURCES:$(SRCDIR)/%.cpp=$(OBJDIR)/%.o)
 
 all : $(OBJDIR) $(PROJ_NAME) 
 
 $(PROJ_NAME) : $(OBJECTS)
-	$(CC) $(CFLAGS) $(LFLAGS) $^ -o $@
+	$(CXX) $(CFLAGS) $(LFLAGS) $^ -o $@
 
-$(OBJECTS) : $(OBJDIR)/%.o : $(SRCDIR)/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
+$(OBJECTS) : $(OBJDIR)/%.o : $(SRCDIR)/%.cpp
+	$(CXX) $(CFLAGS) -c $< -o $@
 
 $(OBJDIR) : 
 	mkdir -p $(OBJDIR)
