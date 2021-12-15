@@ -1,4 +1,5 @@
 #include "battle_ship.h"
+//#include "Arduino.h"
 
 #ifdef CLI_COMPILATION
 #include "battle_cli.h"
@@ -205,8 +206,7 @@ void BattleBoard::board_event_destroyed(int row, int col, bool is_horizontal) {
 
 int BattleBoard::board_set_rand_ships(const std::vector<std::pair<int, int>> &ship_for_gen) {
     Ship temp_ship;
-
-    for (auto it = ship_for_gen.rbegin(); it < ship_for_gen.rend(); it++) {
+    for (auto it = ship_for_gen.begin(); it < ship_for_gen.end(); it++) {
         auto ssize = it->first;
         for(int i = 0; i < it->second;) {
             temp_ship.x = rand() % rows;

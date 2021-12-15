@@ -56,9 +56,6 @@ private:
     std::map<int, int> ship_counts;
     
     // ================ Private methods ================
-    char& field(int r, int c) { 
-        return _field[r][c]; 
-    }
     void board_event_destroyed(int row, int col, bool is_horizontal);
     SHOOT_RESULT board_check_ship_destroyed(int row, int col);
 public:
@@ -98,6 +95,9 @@ public:
     char& mask(int r, int c) {
         return _mask[r][c];
     }
+    char& field(int r, int c) { 
+        return _field[r][c]; 
+    }
     // ================ Game Behavior methods ================
     int board_set_ship(Ship sh);
     int board_set_rand_ships(const std::vector<std::pair<int, int>> &ship_gen_counts);
@@ -105,17 +105,8 @@ public:
     SHOOT_RESULT board_fire_at(int row, int col);
 };
 
-// int board_init(battle_board *brd, uint8_t size, char fill);
-// int board_deinit(battle_board *brd);
-
-// int board_set_ship(battle_board *brd, ship sh);
-// int board_set_rand_ships(battle_board *brd, const uint8_t *ship_gen_counts);
-
-// // watch on ships on field and fill mask with result of shoot
-// SHOOT_RESULT board_fire_at(battle_board *brd, uint8_t row, uint8_t col);
-// SHOOT_RESULT board_check_ship_destroyed(battle_board *brd, uint8_t row, uint8_t col);
-// void board_event_destroyed(battle_board *brd, uint8_t row, uint8_t col, uint8_t is_horizontal);
-
+#ifdef CLI_COMPILATION
 void game_loop(BattleBoard &brd1, PLAYER_TYPE pt1, BattleBoard &brd2, PLAYER_TYPE pt2);
+#endif
 
 #endif
