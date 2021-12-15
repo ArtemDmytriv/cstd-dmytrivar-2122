@@ -7,6 +7,10 @@ set(CMAKE_EXTERNAL_LIBS_PATH ${CMAKE_CURRENT_SOURCE_DIR}/libraries) # arduino ex
 set(SOURCE_DIRECTORIES src)
 set(INC_DIRECTORIES include)
 set(BOARD_NAME uno)
+# default port path
+if(NOT ARDUINO_PORT_PATH)
+    set(ARDUINO_PORT_PATH /dev/ttyS3)
+endif()
 
 set (CMAKE_CXX_STANDARD 14)
 project(${PROJECT_NAME} C CXX)
@@ -39,7 +43,7 @@ include_directories(${INC_DIRECTORIES})
 
 set(${PROJECT_NAME}_BOARD ${BOARD_NAME})
 set(${PROJECT_NAME}_SRCS ${Sources})
-set(${PROJECT_NAME}_PORT /dev/ttyS3)
+set(${PROJECT_NAME}_PORT ${ARDUINO_PORT_PATH})
 set(${PROJECT_NAME}_LIBS stl_lib ) #pugixml_lib)
 
 # Command to generate code arduino firmware (.hex file)
