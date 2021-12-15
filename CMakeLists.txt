@@ -5,7 +5,7 @@ set(CMAKE_ARDUINO_PATH arduino-cmake)
 set(CMAKE_TOOLCHAIN_FILE ${CMAKE_ARDUINO_PATH}/cmake/ArduinoToolchain.cmake) # Arduino Toolchain
 set(CMAKE_EXTERNAL_LIBS_PATH ${CMAKE_CURRENT_SOURCE_DIR}/libraries) # arduino external libs
 set(SOURCE_DIRECTORIES src)
-set(INC_DIRECTORIES src)
+set(INC_DIRECTORIES include)
 set(BOARD_NAME uno)
 
 set (CMAKE_CXX_STANDARD 14)
