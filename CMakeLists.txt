@@ -9,16 +9,19 @@ set(INC_DIRECTORIES include)
 set(BOARD_NAME uno)
 # default port path
 if(NOT ARDUINO_PORT_PATH)
-    set(ARDUINO_PORT_PATH /dev/ttyS3)
+set(ARDUINO_PORT_PATH /dev/ttyS3)
 endif()
 
 set (CMAKE_CXX_STANDARD 14)
 project(${PROJECT_NAME} C CXX)
+cmake_policy(SET CMP0038 OLD)
 
 # link_libraries(${ARDUINO_SDK}/libraries)
 
 # Link external libs directories (as Arduino-IDE uses it)
 link_directories(${CMAKE_EXTERNAL_LIBS_PATH})
+link_directories(/usr/share/arduino/libraries)
+set(SPI_RECURSE True)
 
 # generate stl lib for use
 set(stl_lib_SRCS ${CMAKE_EXTERNAL_LIBS_PATH}/ArduinoSTL-1.1.0/src)
@@ -44,7 +47,7 @@ include_directories(${INC_DIRECTORIES})
 set(${PROJECT_NAME}_BOARD ${BOARD_NAME})
 set(${PROJECT_NAME}_SRCS ${Sources})
 set(${PROJECT_NAME}_PORT ${ARDUINO_PORT_PATH})
-set(${PROJECT_NAME}_LIBS stl_lib ) #pugixml_lib)
+set(${PROJECT_NAME}_LIBS stl_lib) #pugixml_lib)
 
 # Command to generate code arduino firmware (.hex file)
 generate_arduino_firmware(${PROJECT_NAME})

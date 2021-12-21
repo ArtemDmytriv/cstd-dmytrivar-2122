@@ -9,7 +9,7 @@
 #include <iostream>
 #include <algorithm>
 
-BattleBoard::BattleBoard(int rows, int cols, char fill_char) : rows(rows), cols(cols), ship_counts() {
+BattleBoard::BattleBoard(int rows, int cols, char fill_char) : rows(rows), cols(cols), total_ship_count(0), ship_counts() {
     this->_field = new char*[rows];
     this->_field[0] = new char[rows * cols];
     for (int i = 1; i < rows; i++) {
@@ -33,7 +33,7 @@ BattleBoard::~BattleBoard() {
 }
 
 SHOOT_RESULT BattleBoard::board_check_ship_destroyed(int row, int col) {
-    // check vertical
+    // check vertical //1 0
     bool is_horizontal = 0;
     bool is_destroyed = 1; // true 
     int count_adjacent_ship = 0;
@@ -55,7 +55,7 @@ SHOOT_RESULT BattleBoard::board_check_ship_destroyed(int row, int col) {
     if (count_adjacent_ship < 2) {
         count_adjacent_ship = 0;
         is_horizontal = 1;
-        for (int i = row, j = col; j < col; j++) {
+        for (int i = row, j = col; j < cols; j++) {
             if (_field[i][j] == '#')
                 is_destroyed = 0;
             else if (_field[i][j] != 'X')
@@ -158,7 +158,7 @@ SHOOT_RESULT BattleBoard::board_fire_at(int row, int col) {
 }
 
 void BattleBoard::board_event_destroyed(int row, int col, bool is_horizontal) {
-    if (is_horizontal) {
+    if (is_horizontal) { //1 0
         int j = 0;
         // find left corner
         for (j = col; j >= 0 && _field[row][j] == 'X'; j--);
@@ -204,15 +204,15 @@ void BattleBoard::board_event_destroyed(int row, int col, bool is_horizontal) {
     }
 }
 
-int BattleBoard::board_set_rand_ships(const std::vector<std::pair<int, int>> &ship_for_gen) {
+int BattleBoard::board_set_rand_ships(const std::vector<std::pair<int, int>> &ship_for_gen, long (*rand_func)() ) {
     Ship temp_ship;
     for (auto it = ship_for_gen.begin(); it < ship_for_gen.end(); it++) {
         auto ssize = it->first;
         for(int i = 0; i < it->second;) {
-            temp_ship.x = rand() % rows;
-            temp_ship.y = rand() % cols;
+            temp_ship.x = rand_func() % rows;
+            temp_ship.y = rand_func() % cols;
             temp_ship.size = ssize;
-            temp_ship.is_horizontal = rand() % 2;
+            temp_ship.is_horizontal = rand_func() % 2;
             if (board_set_ship(temp_ship) == 0) {  
                 this->total_ship_count++;
                 i++;
@@ -224,16 +224,20 @@ int BattleBoard::board_set_rand_ships(const std::vector<std::pair<int, int>> &sh
 
 
 #ifdef CLI_COMPILATION
+long wrap_rand() {
+    return rand();
+}
+
 void game_loop(BattleBoard &brd1, PLAYER_TYPE pt1, BattleBoard &brd2, PLAYER_TYPE pt2) {
     bool setup_flag = true;
     while (setup_flag) {
         std::vector<std::pair<int,int>> counts = {{1, 4}, {2, 3}, {3, 2}, {4, 1}}; 
         // 1st player set ships  
-        brd1.board_set_rand_ships(counts);
+        brd1.board_set_rand_ships(counts, wrap_rand);
         printf("Player 1 table\n");
         board_print_both(brd1);
         // 2nd player set ships
-        brd2.board_set_rand_ships(counts);
+        brd2.board_set_rand_ships(counts, wrap_rand);
         printf("Player 2 table\n");
         board_print_both(brd2);
         setup_flag = false;

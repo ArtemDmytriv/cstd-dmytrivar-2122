@@ -34,3 +34,7 @@ Requirements:
     cd build && cmake -DARDUINO_PORT_PATH={YOUR COM PORT WITH arduino} ..
 5) Make and upload project
     make upload
+
+Run client:
+cd client_sw
+python3 client.py {YOUR COM PORT WITH arduino}

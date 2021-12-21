@@ -21,6 +21,22 @@ class State(Enum):
     announce_winner = 6
     wait_response = 7
 
+def get_state(arduino) -> State:
+    msg = str()
+    while(True):
+        msg = arduino.readline().decode("utf-8")[:-2]
+        try: 
+            if (msg == SYNC_MSG):
+                raise
+            #print("Debug: ", msg)
+            msg = int(msg)
+            print("Current State: ", State(msg))
+            arduino.write(str(msg).encode("utf-8"))
+            break
+        except:
+            continue
+    return State(msg)
+
 def print_menu(menu_types : list):
     print("==== Game Modes ====")
     for i, mode in enumerate(menu_types):
@@ -61,18 +77,47 @@ def print_board(brd : str):
         print("|")
     print("-"*11*4 + '\n')
 
+def print_battleground(brd1 : str, brd2 : str, arrow : str):
+    brd1 = brd1[1:-1]
+    brd2 = brd2[1:-1]
+
+    print("{} {} {}".format("Player1".center(40), arrow, "Player2".center(40)))
+    print()
+    print("   ", end="")
+    for ch in string.ascii_uppercase[:10]:
+        print("| ", ch, " ", sep="", end="")
+    print("|&&&", end="")
+    for ch in string.ascii_uppercase[:10]:
+        print("| ", ch, " ", sep="", end="")
+    
+    print("|")
+    for r in range(10):
+        print("-"*11*4 + "&&&" + "-"*11*4 + "\n{:<3}".format(r+1), end="")
+        for val in brd1[r * 10: r * 10 + 10]:
+            print("|", cells[val], sep="", end="")
+        print("|&&&", end="")
+        for val in brd2[r * 10: r * 10 + 10]:
+            print("|", cells[val], sep="", end="")
+        print("|")
+    print("-"*11*4 + "&&&" + "-"*11*4 + '\n')
+
 def get_user_shot_cell():
-    x, y = 0, 0
+    x, y = -1, -1
     cell = input("Enter cell for shoot (format example A5 or 5A): ")
-    for elem in list(filter(None, re.split('(\d+)', cell)))[:2]:
-        if (elem in string.ascii_letters):
-            y = string.ascii_uppercase.index(elem.upper())
-        else:
-            x = int(elem) - 1
-    if (x >= 0 and x < 10 and y >= 0 and y < 10):
-        return x, y
+    try:
+        for elem in list(filter(None, re.split('(\d+)', cell)))[:2]:
+            if (elem in string.ascii_letters):
+                y = string.ascii_uppercase.index(elem.upper())
+            else:
+                x = int(elem) - 1
+        if (x >= 0 and x < 10 and y >= 0 and y < 10):
+            return x, y
+    except:
+        return None, None
     return None, None
 
 def send_user_shot_cell(arduino, x, y):
-    arduino.write("s>{} {}".format(x, y))
+    arduino.write("s>{} {}".format(x, y).encode("utf-8"))
     return 0
+
+#s>1 0

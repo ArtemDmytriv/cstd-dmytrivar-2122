@@ -100,7 +100,7 @@ public:
     }
     // ================ Game Behavior methods ================
     int board_set_ship(Ship sh);
-    int board_set_rand_ships(const std::vector<std::pair<int, int>> &ship_gen_counts);
+    int board_set_rand_ships(const std::vector<std::pair<int, int>> &ship_gen_counts, long (*rand_func)());
 
     SHOOT_RESULT board_fire_at(int row, int col);
 };

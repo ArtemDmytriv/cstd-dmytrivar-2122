@@ -9,6 +9,8 @@
 
 #define SERIAL_BUFFER_LEN 128
 
+class BattleBoard;
+
 enum class GAME_MODES {
     player_vs_player //,
     // player_vs_ai,
@@ -28,7 +30,9 @@ enum class GAME_STATE {
     wait_response
 };
 
-GAME_STATE send_state(GAME_STATE prev_gs, GAME_STATE new_gs);
+GAME_STATE send_state(GAME_STATE new_gs);
+void send_both_boards(BattleBoard *brd1, BattleBoard *brd2, bool send_mask);
 int get_shot_coor(int &x, int &y);
+int send_winner(int winner);
 
 #endif

@@ -19,8 +19,10 @@ run_install()
 }
 
 ## Run the run_install function if sany of the libraries are missing
-reqpkgs=("build-essential" "unzip" "cmake" "arduino-mk")
+reqpkgs=("build-essential" "unzip" "cmake" "arduino-mk" "python3-pip")
 dpkg -s "${reqpkgs[@]}" >/dev/null 2>&1 || run_install
+
+pip3 install pyserial
 
 ## Install static libraries if it not exist
 mkdir -p libraries && cd libraries
@@ -38,7 +40,7 @@ cd ..
 
 ## Run Cmake
 mkdir -p build
-cd build && rm -rf ** && cmake -DARDUINO_PORT_PATH=$1 ..
+cd build && rm -rf ** && cmake -Wno-dev -DARDUINO_PORT_PATH=$1 ..
 
 ## Run make upload
 make upload
