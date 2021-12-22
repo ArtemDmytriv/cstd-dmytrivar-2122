@@ -40,7 +40,7 @@ list(APPEND INC_DIRECTORIES ${CMAKE_EXTERNAL_LIBS_PATH}/ArduinoSTL-1.1.0/src)
 # set source files
 file (GLOB Sources ${SOURCE_DIRECTORIES}/*.cpp)
 # temporarly delete unneeded cli source code
-list(REMOVE_ITEM Sources ${SOURCE_DIRECTORIES}/battle_cli.cpp)
+list(REMOVE_ITEM Sources ${CMAKE_CURRENT_SOURCE_DIR}/${SOURCE_DIRECTORIES}/battle_cli.cpp)
 
 include_directories(${INC_DIRECTORIES})
 

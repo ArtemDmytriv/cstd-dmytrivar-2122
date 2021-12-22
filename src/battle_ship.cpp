@@ -10,6 +10,15 @@
 #include <algorithm>
 
 BattleBoard::BattleBoard(int rows, int cols, char fill_char) : rows(rows), cols(cols), total_ship_count(0), ship_counts() {
+    if (rows <= 0 || cols <= 0) {
+#ifdef CLI_COMPILATION
+        std::cerr << "Incorrect num of cols or rows";
+        exit(2);
+#else
+        rows = 10;
+        cols = 10;
+#endif
+    }
     this->_field = new char*[rows];
     this->_field[0] = new char[rows * cols];
     for (int i = 1; i < rows; i++) {
@@ -29,7 +38,7 @@ BattleBoard::~BattleBoard() {
     delete [] this->_mask[0];
     delete [] this->_mask;
     delete [] this->_field[0];
-    delete [] this->_field[0];
+    delete [] this->_field;
 }
 
 SHOOT_RESULT BattleBoard::board_check_ship_destroyed(int row, int col) {
@@ -145,7 +154,7 @@ SHOOT_RESULT BattleBoard::board_fire_at(int row, int col) {
 
     switch (cell) {
     case ' ':
-        _mask[row][col] = '0';
+        fill_both(row, col, '0');
         return SHOOT_RESULT::MISSED_HIT;
     case '0':
     case 'X':
@@ -204,7 +213,13 @@ void BattleBoard::board_event_destroyed(int row, int col, bool is_horizontal) {
     }
 }
 
+void BattleBoard::clear(char fill_char) {
+    std::fill(&_field[0][0], &_field[0][0] + this->get_size(), fill_char);
+    std::fill(&_mask[0][0], &_mask[0][0] + this->get_size(), fill_char);
+}
+
 int BattleBoard::board_set_rand_ships(const std::vector<std::pair<int, int>> &ship_for_gen, long (*rand_func)() ) {
+    this->clear();
     Ship temp_ship;
     for (auto it = ship_for_gen.begin(); it < ship_for_gen.end(); it++) {
         auto ssize = it->first;
