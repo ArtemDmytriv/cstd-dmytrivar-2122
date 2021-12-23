@@ -92,17 +92,17 @@ def print_battleground(brd1 : str, brd2 : str, arrow : str):
     
     print("|")
     for r in range(10):
-        print("-"*11*4 + "&&&" + "-"*11*4 + "\n{:<3}".format(r+1), end="")
+        print("-"*11*4 + "&&&" + "-"*10*4 + "\n{:<3}".format(r+1), end="")
         for val in brd1[r * 10: r * 10 + 10]:
             print("|", cells[val], sep="", end="")
         print("|&&&", end="")
         for val in brd2[r * 10: r * 10 + 10]:
             print("|", cells[val], sep="", end="")
         print("|")
-    print("-"*11*4 + "&&&" + "-"*11*4 + '\n')
+    print("-"*11*4 + "&&&" + "-"*10*4 + '\n')
 
 def get_user_shot_cell():
-    x, y = -1, -1
+    x, y = None, None
     cell = input("Enter cell for shoot (format example A5 or 5A): ")
     try:
         for elem in list(filter(None, re.split('(\d+)', cell)))[:2]:

@@ -49,8 +49,8 @@ while (True):
         brd_2_mask = get_board_serial(arduino)
         print_battleground(brd_1_mask, brd_2_mask, "-->")
         # shoot
-        x = -1
-        while (not x or x < 0):
+        x = y = None
+        while (x == None or y == None):
             x, y = get_user_shot_cell()
         send_user_shot_cell(arduino, x, y)
         # get next state
