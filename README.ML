@@ -38,3 +38,9 @@ Requirements:
 Run client:
 cd client_sw
 python3 client.py {YOUR COM PORT WITH arduino}
+
+Run tests:
+cd tests
+mkdir build
+cd build && cmake .. && make
+./unit_test
