@@ -7,7 +7,7 @@ from serial.serialposix import Serial
 
 com_port = "/dev/ttyS3"
 
-arduino = serial.Serial(port=com_port, baudrate=9600, timeout=.1)
+arduino = serial.Serial(port=com_port, baudrate=115200, timeout=.1)
 
 current_state = State.wait_sync
 
@@ -65,6 +65,18 @@ while (True):
             x, y = get_user_shot_cell()
         send_user_shot_cell(arduino, x, y)
         # get next state
+        current_state = get_state(arduino)
+    elif (current_state == State.turns_AI1):
+        brd_1_mask = get_board_serial(arduino)
+        brd_2_mask = get_board_serial(arduino)
+
+        print_battleground(brd_1_mask, brd_2_mask, "--AI->")
+        current_state = get_state(arduino)
+    elif (current_state == State.turns_AI2):
+        brd_1_mask = get_board_serial(arduino)
+        brd_2_mask = get_board_serial(arduino)
+
+        print_battleground(brd_1_mask, brd_2_mask, "<-AI--")
         current_state = get_state(arduino)
     elif (current_state == State.announce_winner):
         brd_1_full = get_board_serial(arduino)

@@ -4,6 +4,7 @@
 #ifdef CLI_COMPILATION
 #include "battle_cli.h"
 #endif
+#include "battle_ship_ai.h"
 
 #include <cstdlib>
 #include <iostream>
@@ -147,7 +148,7 @@ int BattleBoard::board_set_ship( Ship sh) {
 }
 
 SHOOT_RESULT BattleBoard::board_fire_at(int row, int col) {
-    if (row >= rows || col >= cols) {
+    if (row >= this->rows || col >= this->cols) {
         return SHOOT_RESULT::NOT_ALLOWED;
     }
     char cell = _field[row][col];
@@ -237,7 +238,6 @@ int BattleBoard::board_set_rand_ships(const std::vector<std::pair<int, int>> &sh
     return 0;
 }
 
-
 #ifdef CLI_COMPILATION
 long wrap_rand() {
     return rand();
@@ -245,6 +245,8 @@ long wrap_rand() {
 
 void game_loop(BattleBoard &brd1, PLAYER_TYPE pt1, BattleBoard &brd2, PLAYER_TYPE pt2) {
     bool setup_flag = true;
+    AI_BattleShip ai1(wrap_rand),
+                ai2(wrap_rand);
     while (setup_flag) {
         std::vector<std::pair<int,int>> counts = {{1, 4}, {2, 3}, {3, 2}, {4, 1}}; 
         // 1st player set ships  
@@ -255,52 +257,90 @@ void game_loop(BattleBoard &brd1, PLAYER_TYPE pt1, BattleBoard &brd2, PLAYER_TYP
         brd2.board_set_rand_ships(counts, wrap_rand);
         printf("Player 2 table\n");
         board_print_both(brd2);
+        
+        if (pt1 == PLAYER_TYPE::AI_PLAYER_TYPE) {
+            ai1.init_moves(brd2.get_rows(), brd2.get_cols());
+        }
+        if (pt2 == PLAYER_TYPE::AI_PLAYER_TYPE) {
+            ai2.init_moves(brd1.get_rows(), brd1.get_cols());
+        }
         setup_flag = false;
     }
     int winner = 0;
     int row, col;
+    SHOOT_RESULT last_ai1_shoot, last_ai2_shoot;
     while (!winner) {
         // player brd1
         while(true) {
             board_print_battlefield(brd1, brd2);
-            printf("Player 1 turns\n");
-            if (get_coor_user_input(std::cin, brd2.get_rows(), brd2.get_cols(), &row, &col) < 0)
-                continue;
-            // turn 1st player
-            SHOOT_RESULT status_shot = brd2.board_fire_at(row, col);
-            if (status_shot == SHOOT_RESULT::SUCCESS_FINISH_HIT) {
-                if (brd2.get_total_alive_count() == 0) {
-                    winner = 1;
+            if (pt1 == PLAYER_TYPE::HUMAN_PLAYER_TYPE) {
+                printf("Player 1 turns\n");
+                if (get_coor_user_input(std::cin, brd2.get_rows(), brd2.get_cols(), &row, &col) < 0)
+                    continue;
+                // turn 1st player
+                SHOOT_RESULT status_shot = brd2.board_fire_at(row, col);
+                if (status_shot == SHOOT_RESULT::SUCCESS_FINISH_HIT) {
+                    if (brd2.get_total_alive_count() == 0) {
+                        winner = 1;
+                        break;
+                    }
+                    continue;
+                }
+                if (status_shot != SHOOT_RESULT::MISSED_HIT) {
+                    // Shoot again
+                    continue;
+                }
+                break;
+            }
+            else { // AI
+                last_ai1_shoot = ai1.fire(&brd2);
+                if (last_ai1_shoot == SHOOT_RESULT::MISSED_HIT) {
                     break;
                 }
-                continue;
+                else if (last_ai1_shoot == SHOOT_RESULT::SUCCESS_FINISH_HIT) {
+                    ai1.reset_vars();
+                    if (brd2.get_total_alive_count() == 0) {
+                        winner = 1;
+                        break;
+                    }
+                }
             }
-            if (status_shot != SHOOT_RESULT::MISSED_HIT) {
-                // Shoot again
-                continue;
-            }
-            break;
         }
         // turn 2nd player
         while(true) {
             board_print_battlefield(brd1, brd2);
-            printf("Player 2 turns\n");
-            if (get_coor_user_input(std::cin, brd1.get_rows(), brd1.get_cols(), &row, &col) < 0)
-                continue;
-            // turn 1st player
-            SHOOT_RESULT status_shot = brd1.board_fire_at(row, col);
-            if (status_shot == SHOOT_RESULT::SUCCESS_FINISH_HIT) {
-                if (brd1.get_total_alive_count() == 0) {
-                    winner = 2;
+            if (pt2 == PLAYER_TYPE::HUMAN_PLAYER_TYPE) {
+                printf("Player 2 turns\n");
+                if (get_coor_user_input(std::cin, brd1.get_rows(), brd1.get_cols(), &row, &col) < 0)
+                    continue;
+                // turn 1st player
+                SHOOT_RESULT status_shot = brd1.board_fire_at(row, col);
+                if (status_shot == SHOOT_RESULT::SUCCESS_FINISH_HIT) {
+                    if (brd1.get_total_alive_count() == 0) {
+                        winner = 2;
+                        break;
+                    }
+                    continue;
+                }
+                if (status_shot != SHOOT_RESULT::MISSED_HIT) {
+                    // Shoot again
+                    continue;
+                }
+                break;
+            }
+            else { // AI
+                last_ai2_shoot = ai2.fire(&brd1);
+                if (last_ai2_shoot == SHOOT_RESULT::MISSED_HIT) {
                     break;
                 }
-                continue;
+                else if (last_ai2_shoot == SHOOT_RESULT::SUCCESS_FINISH_HIT) {
+                    ai2.reset_vars();
+                    if (brd1.get_total_alive_count() == 0) {
+                        winner = 1;
+                        break;
+                    }
+                }
             }
-            if (status_shot != SHOOT_RESULT::MISSED_HIT) {
-                // Shoot again
-                continue;
-            }
-            break;
         }
     }
 }

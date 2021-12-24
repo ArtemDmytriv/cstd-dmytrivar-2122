@@ -10,7 +10,7 @@ GAME_STATE send_state(GAME_STATE new_gs) {
 
     if (new_gs != GAME_STATE::wait_sync) {
         while(confirmStr != state_buffer) {
-            Serial.println(state_buffer);    
+            Serial.println(state_buffer);
             confirmStr = Serial.readString();
         }
     }

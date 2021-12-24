@@ -12,12 +12,12 @@
 class BattleBoard;
 
 enum class GAME_MODES {
-    player_vs_player //,
-    // player_vs_ai,
-    // ai_vs_ai
+    player_vs_player ,
+    player_vs_ai,
+    ai_vs_ai
 };
 
-const std::vector<std::string> vec_modes = { "Player vs player" };
+const std::vector<std::string> vec_modes = { "Player vs player", "Player vs AI", "AI vs AI" };
 
 enum class GAME_STATE {
     wait_sync,
@@ -26,6 +26,8 @@ enum class GAME_STATE {
     setup_p2_board,
     turns_p1,
     turns_p2,
+    turns_AI1,
+    turns_AI2,
     announce_winner,
     wait_response
 };
