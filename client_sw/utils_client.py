@@ -3,26 +3,29 @@ from enum import Enum
 import string
 import re
 import os
+import sys
 
 SYNC_MSG = "#$SYNC$#"
 END_SEQ_MSG = "#$END$#"
 
 cells = {   '#' : "###",
-            'X' : "+X+",
+            'X' : "▓▓▓",
             ' ' : "   ",
             '0' : " O "}
 
 class State(Enum):
     wait_sync = 0
     main_menu = 1
-    setup_p1_board = 2
-    setup_p2_board = 3 
-    turns_p1 = 4
-    turns_p2 = 5
-    turns_AI1 = 6
-    turns_AI2 = 7
-    announce_winner = 8
-    wait_response = 9
+    mode_menu = 2
+    load_game = 3
+    setup_p1_board = 4
+    setup_p2_board = 5 
+    turns_p1 = 6
+    turns_p2 = 7
+    turns_AI1 = 8
+    turns_AI2 = 9
+    announce_winner = 10
+    wait_response = 11
 
 def get_state(arduino) -> State:
     msg = str()
@@ -53,7 +56,9 @@ def get_menu_mode(menu_types : list) -> int:
         try:
             mode = int(input("Enter mode number: "))
             if (mode - 1 < len(menu_types) and mode > 0):
-                break    
+                break
+        except KeyboardInterrupt:
+            sys.exit()
         except:
             print("Bad input, try again")
     return mode
@@ -122,5 +127,16 @@ def get_user_shot_cell():
 def send_user_shot_cell(arduino, x, y):
     arduino.write("s>{} {}".format(x, y).encode("utf-8"))
     return 0
+
+def send_saved_game(arduino):
+    arduino.write("0".encode("utf-8"))
+    arduino.write("0".encode("utf-8"))
+    arduino.write("0".encode("utf-8"))
+
+    arduino.write("0".encode("utf-8"))
+    arduino.write("0".encode("utf-8"))
+    arduino.write("0".encode("utf-8"))
+
+    arduino.write("6".encode("utf-8"))
 
 #s>1 0

@@ -23,7 +23,8 @@ while (True):
         if (hw_msg == SYNC_MSG):
             arduino.write(b"#")
             current_state = get_state(arduino)
-    elif (current_state == State.main_menu):
+        continue
+    elif (current_state == State.main_menu or current_state == State.mode_menu):
         mm_msg = str()
         menu_types.clear()
         while (mm_msg != END_SEQ_MSG):
@@ -31,19 +32,18 @@ while (True):
             menu_types.append(mm_msg)
         # print menu
         mode = get_menu_mode(menu_types)
-        arduino.write("m{}".format(mode).encode("utf-8"))
-        # get next state
-        current_state = get_state(arduino)
+        if (current_state == State.main_menu):
+            arduino.write("t{}".format(mode).encode("utf-8"))
+        else:
+            arduino.write("m{}".format(mode).encode("utf-8"))
+    elif (current_state == State.load_game):
+        send_saved_game(arduino)
     elif (current_state == State.setup_p1_board):
         brd_1_full = get_board_serial(arduino)
         print_board(brd_1_full)
-
-        current_state = get_state(arduino)
     elif (current_state == State.setup_p2_board):
         brd_2_full = get_board_serial(arduino)
         print_board(brd_2_full)
-
-        current_state = get_state(arduino)
     elif (current_state == State.turns_p1):
         brd_1_mask = get_board_serial(arduino)
         brd_2_mask = get_board_serial(arduino)
@@ -54,7 +54,6 @@ while (True):
             x, y = get_user_shot_cell()
         send_user_shot_cell(arduino, x, y)
         # get next state
-        current_state = get_state(arduino)
     elif (current_state == State.turns_p2):
         brd_1_mask = get_board_serial(arduino)
         brd_2_mask = get_board_serial(arduino)
@@ -65,19 +64,16 @@ while (True):
             x, y = get_user_shot_cell()
         send_user_shot_cell(arduino, x, y)
         # get next state
-        current_state = get_state(arduino)
     elif (current_state == State.turns_AI1):
         brd_1_mask = get_board_serial(arduino)
         brd_2_mask = get_board_serial(arduino)
 
         print_battleground(brd_1_mask, brd_2_mask, "--AI->")
-        current_state = get_state(arduino)
     elif (current_state == State.turns_AI2):
         brd_1_mask = get_board_serial(arduino)
         brd_2_mask = get_board_serial(arduino)
 
         print_battleground(brd_1_mask, brd_2_mask, "<-AI--")
-        current_state = get_state(arduino)
     elif (current_state == State.announce_winner):
         brd_1_full = get_board_serial(arduino)
         brd_2_full = get_board_serial(arduino)
@@ -89,4 +85,4 @@ while (True):
                 print_battleground(brd_1_full, brd_2_full, "Player 1 WON!")
             else:
                 print_battleground(brd_1_full, brd_2_full, "Player 2 WON!")
-        current_state = get_state(arduino)   
+    current_state = get_state(arduino)   

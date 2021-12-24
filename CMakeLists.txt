@@ -14,7 +14,6 @@ endif()
 
 set (CMAKE_CXX_STANDARD 14)
 project(${PROJECT_NAME} C CXX)
-cmake_policy(SET CMP0038 OLD)
 
 # link_libraries(${ARDUINO_SDK}/libraries)
 
