@@ -1,6 +1,7 @@
 #include "battle_utils.h"
 #include "battle_ship.h"
 
+#include <algorithm>
 #include <Arduino.h>
 
 GAME_STATE send_state(GAME_STATE new_gs) {
@@ -60,4 +61,21 @@ int send_winner(int winner) {
     snprintf(buffer, 8, "w%d", winner);
     Serial.println(buffer);
     Serial.println(buffer);
+}
+
+GAME_STATE load_game_from_serial(BattleBoard *brd1, PLAYER_TYPE &p1, BattleBoard *brd2, PLAYER_TYPE &p2) {
+    String str;
+    p1 = PLAYER_TYPE(Serial.readString().toInt());
+    str = Serial.readString();
+    std::copy(str.c_str(), str.c_str() + str.length(), &brd1->field(0, 0));
+    str = Serial.readString();
+    std::copy(str.c_str(), str.c_str() + str.length(), &brd1->mask(0, 0));
+
+    p2 = PLAYER_TYPE(Serial.readString().toInt());
+    str = Serial.readString();
+    std::copy(str.c_str(), str.c_str() + str.length(), &brd2->field(0, 0));
+    str = Serial.readString();
+    std::copy(str.c_str(), str.c_str() + str.length(), &brd2->mask(0, 0));
+
+    return GAME_STATE(Serial.readString().toInt());
 }

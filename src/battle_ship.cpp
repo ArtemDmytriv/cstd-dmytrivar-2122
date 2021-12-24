@@ -1,13 +1,13 @@
 #include "battle_ship.h"
+#include "battle_ship_ai.h"
 //#include "Arduino.h"
 
 #ifdef CLI_COMPILATION
 #include "battle_cli.h"
-#endif
-#include "battle_ship_ai.h"
-
-#include <cstdlib>
 #include <iostream>
+#include <cstdlib>
+#endif
+
 #include <algorithm>
 
 BattleBoard::BattleBoard(int rows, int cols, char fill_char) : rows(rows), cols(cols), total_ship_count(0), ship_counts() {
@@ -20,25 +20,15 @@ BattleBoard::BattleBoard(int rows, int cols, char fill_char) : rows(rows), cols(
         cols = 10;
 #endif
     }
-    this->_field = new char*[rows];
-    this->_field[0] = new char[rows * cols];
-    for (int i = 1; i < rows; i++) {
-        _field[i] = _field[i - 1] + cols;
-    }
-    std::fill(_field[0], _field[0] + rows * cols, fill_char);
+    this->_field = new char[rows * cols];
+    std::fill(_field, _field + rows * cols, fill_char);
 
-    this->_mask = new char*[rows];
-    this->_mask[0] = new char[rows * cols];
-    for (int i = 1; i < rows; i++) {
-        _mask[i] = _mask[i - 1] + cols;
-    }
-    std::fill(_mask[0], _mask[0] + rows * cols, fill_char);
+    this->_mask = new char[rows * cols];
+    std::fill(_mask, _mask + rows * cols, fill_char);
 }
 
 BattleBoard::~BattleBoard() {
-    delete [] this->_mask[0];
     delete [] this->_mask;
-    delete [] this->_field[0];
     delete [] this->_field;
 }
 
@@ -48,16 +38,16 @@ SHOOT_RESULT BattleBoard::board_check_ship_destroyed(int row, int col) {
     bool is_destroyed = 1; // true 
     int count_adjacent_ship = 0;
     for (int i = row, j = col; i < rows; i++) {
-        if (_field[i][j] == '#')
+        if (field(i, j) == '#')
             is_destroyed = 0;
-        else if (_field[i][j] != 'X')
+        else if (field(i, j) != 'X')
             break;
         count_adjacent_ship++;
     }
     for (int i = row - 1, j = col; i >= 0; i--) {
-        if (_field[i][j] == '#')
+        if (field(i, j) == '#')
             is_destroyed = 0;
-        else if (_field[i][j] != 'X')
+        else if (field(i, j) != 'X')
             break;
         count_adjacent_ship++;
     }
@@ -66,23 +56,23 @@ SHOOT_RESULT BattleBoard::board_check_ship_destroyed(int row, int col) {
         count_adjacent_ship = 0;
         is_horizontal = 1;
         for (int i = row, j = col; j < cols; j++) {
-            if (_field[i][j] == '#')
+            if (field(i, j) == '#')
                 is_destroyed = 0;
-            else if (_field[i][j] != 'X')
+            else if (field(i, j) != 'X')
                 break;
             count_adjacent_ship++;
         }
         for (int i = row, j = col - 1; j >= 0; j--) {
-            if (_field[i][j] == '#')
+            if (field(i, j) == '#')
                 is_destroyed = 0;
-            else if (_field[i][j] != 'X')
+            else if (field(i, j) != 'X')
                 break;
             count_adjacent_ship++;
         }
     }
     if (is_destroyed) {
         board_event_destroyed(row, col, is_horizontal);
-        ship_counts[count_adjacent_ship]--;
+        ship_counts[count_adjacent_ship - 1]--;
         total_ship_count--;
     }
     return is_destroyed? SHOOT_RESULT::SUCCESS_FINISH_HIT : SHOOT_RESULT::SUCCESS_HIT;
@@ -91,47 +81,47 @@ SHOOT_RESULT BattleBoard::board_check_ship_destroyed(int row, int col) {
 int BattleBoard::board_set_ship( Ship sh) {
     // check up/left diagonal cells
     if (!sh.is_horizontal && sh.x - 1 >= 0) { 
-        if (_field[sh.x - 1][sh.y] != ' ' ||
-            (sh.y - 1 >= 0        && _field[sh.x - 1][sh.y - 1] != ' ') ||
-            (sh.y + 1 < cols      && _field[sh.x - 1][sh.y + 1] != ' '))
+        if (field(sh.x - 1, sh.y) != ' ' ||
+            (sh.y - 1 >= 0        && field(sh.x - 1, sh.y - 1) != ' ') ||
+            (sh.y + 1 < cols      && field(sh.x - 1, sh.y + 1) != ' '))
             return -1;
     }
     else if (sh.is_horizontal && sh.y - 1 >= 0) {
-        if (_field[sh.x][sh.y - 1] != ' ' ||
-            (sh.x - 1 >= 0        && _field[sh.x - 1][sh.y - 1] != ' ') ||
-            (sh.x + 1 < rows      && _field[sh.x + 1][sh.y - 1] != ' '))
+        if (field(sh.x, sh.y - 1) != ' ' ||
+            (sh.x - 1 >= 0        && field(sh.x - 1, sh.y - 1) != ' ') ||
+            (sh.x + 1 < rows      && field(sh.x + 1, sh.y - 1) != ' '))
             return -1;
     }
 
     for (int i = 0; i < sh.size; (sh.is_horizontal)? ++sh.y : ++sh.x, i++) {
-        if (sh.y >= cols || sh.x >= rows || _field[sh.x][sh.y] != ' ') {
+        if (sh.y >= cols || sh.x >= rows || field(sh.x, sh.y) != ' ') {
             return -1;
         }
         if (sh.is_horizontal) {
-            if (sh.x + 1 < rows && _field[sh.x + 1][sh.y] != ' ')
+            if (sh.x + 1 < rows && field(sh.x + 1, sh.y) != ' ')
                 return -1;
-            if (sh.x - 1 >= 0 && _field[sh.x - 1][sh.y] != ' ')
+            if (sh.x - 1 >= 0 && field(sh.x - 1, sh.y) != ' ')
                 return -1;
         }
         else {
-            if (sh.y + 1 < cols && _field[sh.x][sh.y + 1] != ' ')
+            if (sh.y + 1 < cols && field(sh.x, sh.y + 1) != ' ')
                 return -1;
-            if (sh.y - 1 >= 0  && _field[sh.x][sh.y - 1] != ' ')
+            if (sh.y - 1 >= 0  && field(sh.x, sh.y - 1) != ' ')
                 return -1;
         }
     }
 
     // check down/right diagonal cells
     if (!sh.is_horizontal && sh.x < rows) { 
-        if (_field[sh.x][sh.y] != ' ' ||
-            (sh.y - 1 >= 0        && _field[sh.x][sh.y - 1] != ' ') ||
-            (sh.y + 1 < cols      && _field[sh.x][sh.y + 1] != ' '))
+        if (field(sh.x, sh.y) != ' ' ||
+            (sh.y - 1 >= 0        && field(sh.x, sh.y - 1) != ' ') ||
+            (sh.y + 1 < cols      && field(sh.x, sh.y + 1) != ' '))
         return -1;
     }
     else if (sh.is_horizontal && sh.y < cols) {
-        if (_field[sh.x][sh.y] != ' ' ||
-            (sh.x - 1 >= 0        && _field[sh.x - 1][sh.y] != ' ') ||
-            (sh.x + 1 < rows      && _field[sh.x + 1][sh.y] != ' '))
+        if (field(sh.x, sh.y) != ' ' ||
+            (sh.x - 1 >= 0        && field(sh.x - 1, sh.y) != ' ') ||
+            (sh.x + 1 < rows      && field(sh.x + 1, sh.y) != ' '))
             return -1;
     }
 
@@ -141,9 +131,9 @@ int BattleBoard::board_set_ship( Ship sh) {
         sh.x -= sh.size;
 
     for (int i = 0; i < sh.size; (sh.is_horizontal)? ++sh.y : ++sh.x, i++) {
-        _field[sh.x][sh.y] = '#';
+        field(sh.x, sh.y) = '#';
     }
-    ship_counts[sh.size]++;
+    ship_counts[sh.size - 1]++;
     return 0;
 }
 
@@ -151,7 +141,7 @@ SHOOT_RESULT BattleBoard::board_fire_at(int row, int col) {
     if (row >= this->rows || col >= this->cols) {
         return SHOOT_RESULT::NOT_ALLOWED;
     }
-    char cell = _field[row][col];
+    char cell = field(row, col);
 
     switch (cell) {
     case ' ':
@@ -171,7 +161,7 @@ void BattleBoard::board_event_destroyed(int row, int col, bool is_horizontal) {
     if (is_horizontal) { //1 0
         int j = 0;
         // find left corner
-        for (j = col; j >= 0 && _field[row][j] == 'X'; j--);
+        for (j = col; j >= 0 && field(row, j) == 'X'; j--);
         // fill left side 
         if (j >= 0) {
             fill_both(row, j, '0');
@@ -179,7 +169,7 @@ void BattleBoard::board_event_destroyed(int row, int col, bool is_horizontal) {
             if (row < rows - 1)    fill_both(row+1, j, '0');
         }
         // fill ship neigh cells
-        for (j++; j < cols && _field[row][j] == 'X'; j++) {
+        for (j++; j < cols && field(row, j) == 'X'; j++) {
             if (row > 0)           fill_both(row-1, j, '0');
             if (row < rows - 1)    fill_both(row+1, j, '0');
         }
@@ -193,7 +183,7 @@ void BattleBoard::board_event_destroyed(int row, int col, bool is_horizontal) {
     else {
         int i = 0;
         // find up corner
-        for (i = row; i >= 0 && _field[i][col] == 'X'; i--);
+        for (i = row; i >= 0 && field(i, col) == 'X'; i--);
         // fill up side 
         if (i >= 0) {
             fill_both(i, col, '0');
@@ -201,7 +191,7 @@ void BattleBoard::board_event_destroyed(int row, int col, bool is_horizontal) {
             if (col < cols - 1)    fill_both(i, col+1, '0');
         }
         // fill ship neigh cells
-        for (i++; i < rows && _field[i][col] == 'X'; i++) {
+        for (i++; i < rows && field(i, col) == 'X'; i++) {
             if (col > 0)           fill_both(i, col-1, '0');
             if (col < cols - 1)    fill_both(i, col+1, '0');
         }
@@ -215,8 +205,8 @@ void BattleBoard::board_event_destroyed(int row, int col, bool is_horizontal) {
 }
 
 void BattleBoard::clear(char fill_char) {
-    std::fill(&_field[0][0], &_field[0][0] + this->get_size(), fill_char);
-    std::fill(&_mask[0][0], &_mask[0][0] + this->get_size(), fill_char);
+    std::fill(_field, _field + this->get_size(), fill_char);
+    std::fill(_mask, _mask + this->get_size(), fill_char);
 }
 
 int BattleBoard::board_set_rand_ships(const std::vector<std::pair<int, int>> &ship_for_gen, long (*rand_func)() ) {
@@ -237,111 +227,3 @@ int BattleBoard::board_set_rand_ships(const std::vector<std::pair<int, int>> &sh
     }
     return 0;
 }
-
-#ifdef CLI_COMPILATION
-long wrap_rand() {
-    return rand();
-}
-
-void game_loop(BattleBoard &brd1, PLAYER_TYPE pt1, BattleBoard &brd2, PLAYER_TYPE pt2) {
-    bool setup_flag = true;
-    AI_BattleShip ai1(wrap_rand),
-                ai2(wrap_rand);
-    while (setup_flag) {
-        std::vector<std::pair<int,int>> counts = {{1, 4}, {2, 3}, {3, 2}, {4, 1}}; 
-        // 1st player set ships  
-        brd1.board_set_rand_ships(counts, wrap_rand);
-        printf("Player 1 table\n");
-        board_print_both(brd1);
-        // 2nd player set ships
-        brd2.board_set_rand_ships(counts, wrap_rand);
-        printf("Player 2 table\n");
-        board_print_both(brd2);
-        
-        if (pt1 == PLAYER_TYPE::AI_PLAYER_TYPE) {
-            ai1.init_moves(brd2.get_rows(), brd2.get_cols());
-        }
-        if (pt2 == PLAYER_TYPE::AI_PLAYER_TYPE) {
-            ai2.init_moves(brd1.get_rows(), brd1.get_cols());
-        }
-        setup_flag = false;
-    }
-    int winner = 0;
-    int row, col;
-    SHOOT_RESULT last_ai1_shoot, last_ai2_shoot;
-    while (!winner) {
-        // player brd1
-        while(true) {
-            board_print_battlefield(brd1, brd2);
-            if (pt1 == PLAYER_TYPE::HUMAN_PLAYER_TYPE) {
-                printf("Player 1 turns\n");
-                if (get_coor_user_input(std::cin, brd2.get_rows(), brd2.get_cols(), &row, &col) < 0)
-                    continue;
-                // turn 1st player
-                SHOOT_RESULT status_shot = brd2.board_fire_at(row, col);
-                if (status_shot == SHOOT_RESULT::SUCCESS_FINISH_HIT) {
-                    if (brd2.get_total_alive_count() == 0) {
-                        winner = 1;
-                        break;
-                    }
-                    continue;
-                }
-                if (status_shot != SHOOT_RESULT::MISSED_HIT) {
-                    // Shoot again
-                    continue;
-                }
-                break;
-            }
-            else { // AI
-                last_ai1_shoot = ai1.fire(&brd2);
-                if (last_ai1_shoot == SHOOT_RESULT::MISSED_HIT) {
-                    break;
-                }
-                else if (last_ai1_shoot == SHOOT_RESULT::SUCCESS_FINISH_HIT) {
-                    ai1.reset_vars();
-                    if (brd2.get_total_alive_count() == 0) {
-                        winner = 1;
-                        break;
-                    }
-                }
-            }
-        }
-        // turn 2nd player
-        while(true) {
-            board_print_battlefield(brd1, brd2);
-            if (pt2 == PLAYER_TYPE::HUMAN_PLAYER_TYPE) {
-                printf("Player 2 turns\n");
-                if (get_coor_user_input(std::cin, brd1.get_rows(), brd1.get_cols(), &row, &col) < 0)
-                    continue;
-                // turn 1st player
-                SHOOT_RESULT status_shot = brd1.board_fire_at(row, col);
-                if (status_shot == SHOOT_RESULT::SUCCESS_FINISH_HIT) {
-                    if (brd1.get_total_alive_count() == 0) {
-                        winner = 2;
-                        break;
-                    }
-                    continue;
-                }
-                if (status_shot != SHOOT_RESULT::MISSED_HIT) {
-                    // Shoot again
-                    continue;
-                }
-                break;
-            }
-            else { // AI
-                last_ai2_shoot = ai2.fire(&brd1);
-                if (last_ai2_shoot == SHOOT_RESULT::MISSED_HIT) {
-                    break;
-                }
-                else if (last_ai2_shoot == SHOOT_RESULT::SUCCESS_FINISH_HIT) {
-                    ai2.reset_vars();
-                    if (brd1.get_total_alive_count() == 0) {
-                        winner = 1;
-                        break;
-                    }
-                }
-            }
-        }
-    }
-}
-#endif
