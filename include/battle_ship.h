@@ -1,9 +1,6 @@
 #ifndef _BATTLE_SHIP_H
 #define _BATTLE_SHIP_H
 
-#include <vector>
-#include <utility>
-
 enum class PLAYER_TYPE{
     HUMAN_PLAYER_TYPE,
     AI_PLAYER_TYPE
@@ -80,7 +77,7 @@ public:
     }
     // ================ Game Behavior methods ================
     int board_set_ship(Ship sh);
-    int board_set_rand_ships(const std::vector<std::pair<int, int>> &ship_gen_counts, long (*rand_func)());
+    int board_set_rand_ships(const int ship_gen_counts[4], long (*rand_func)());
 
     SHOOT_RESULT board_fire_at(int row, int col);
 };

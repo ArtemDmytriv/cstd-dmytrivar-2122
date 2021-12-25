@@ -29,11 +29,11 @@ generate_arduino_library(stl_lib)
 list(APPEND INC_DIRECTORIES ${CMAKE_EXTERNAL_LIBS_PATH}/ArduinoSTL-1.1.0/src)
 
 #generate xml pugixml lib for use
-#set(pugixml_lib_SRCS ${CMAKE_EXTERNAL_LIBS_PATH}/pugixml-1.11.4/src)
-#set(pugixml_lib_HDRS ${CMAKE_EXTERNAL_LIBS_PATH}/pugixml-1.11.4/src)
-#set(pugixml_lib_BOARD ${BOARD_NAME})
-#generate_arduino_library(pugixml_lib)
-#list(APPEND INC_DIRECTORIES ${CMAKE_EXTERNAL_LIBS_PATH}/pugixml-1.11.4/src)
+# set(pugixml_lib_SRCS ${CMAKE_EXTERNAL_LIBS_PATH}/pugixml-1.11.4/src)
+# set(pugixml_lib_HDRS ${CMAKE_EXTERNAL_LIBS_PATH}/pugixml-1.11.4/src)
+# set(pugixml_lib_BOARD ${BOARD_NAME})
+# generate_arduino_library(pugixml_lib)
+# list(APPEND INC_DIRECTORIES ${CMAKE_EXTERNAL_LIBS_PATH}/pugixml-1.11.4/src)
 
 # set source files
 file (GLOB Sources ${SOURCE_DIRECTORIES}/*.cpp)

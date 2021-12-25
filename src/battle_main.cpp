@@ -89,7 +89,12 @@ void loop() {
             break;
         }
         case GAME_STATE::load_game : {
-            current_state = load_game_from_serial(brd_p1, p1, brd_p2, p2);
+            Serial.println(SYNC_MSG);
+            if (Serial.available() > 0) {
+                current_state = send_state(load_save(brd_p1, p1, brd_p2, p2));
+            }
+            current_state = send_state(GAME_STATE::main_menu);
+            delay(500);
             break;
         }
         case GAME_STATE::wait_response : {

@@ -31,11 +31,11 @@ if [ ! -d "ArduinoSTL-1.1.0" ]; then
     unzip ArduinoSTL-1.1.0.zip
     rm ArduinoSTL-1.1.0.zip
 fi
-# if [ ! -d "pugixml-1.11.4" ]; then
-#     wget https://github.com/zeux/pugixml/releases/download/v1.11.4/pugixml-1.11.4.tar.gz
-#     tar zxf pugixml-1.11.4.tar.gz
-#     rm pugixml-1.11.4.tar.gz
-# fi
+if [ ! -d "pugixml-1.11.4" ]; then
+    wget https://github.com/zeux/pugixml/releases/download/v1.11.4/pugixml-1.11.4.tar.gz
+    tar zxf pugixml-1.11.4.tar.gz
+    rm pugixml-1.11.4.tar.gz
+fi
 cd ..
 
 ## Run Cmake

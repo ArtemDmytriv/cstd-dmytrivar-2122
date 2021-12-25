@@ -8,7 +8,7 @@
 #include <cstdlib>
 #endif
 
-#include <algorithm>
+#include <cstring>
 
 BattleBoard::BattleBoard(int rows, int cols, char fill_char) : rows(rows), cols(cols), total_ship_count(0), ship_counts() {
     if (rows <= 0 || cols <= 0) {
@@ -21,10 +21,9 @@ BattleBoard::BattleBoard(int rows, int cols, char fill_char) : rows(rows), cols(
 #endif
     }
     this->_field = new char[rows * cols];
-    std::fill(_field, _field + rows * cols, fill_char);
-
+    memset(_field, fill_char, rows*cols);
     this->_mask = new char[rows * cols];
-    std::fill(_mask, _mask + rows * cols, fill_char);
+    memset(_mask, fill_char, rows*cols);
 }
 
 BattleBoard::~BattleBoard() {
@@ -205,16 +204,16 @@ void BattleBoard::board_event_destroyed(int row, int col, bool is_horizontal) {
 }
 
 void BattleBoard::clear(char fill_char) {
-    std::fill(_field, _field + this->get_size(), fill_char);
-    std::fill(_mask, _mask + this->get_size(), fill_char);
+    memset(_field, fill_char, rows*cols);
+    memset(_mask, fill_char, rows*cols);
 }
 
-int BattleBoard::board_set_rand_ships(const std::vector<std::pair<int, int>> &ship_for_gen, long (*rand_func)() ) {
+int BattleBoard::board_set_rand_ships(const int ship_for_gen[4], long (*rand_func)() ) {
     this->clear();
     Ship temp_ship;
-    for (auto it = ship_for_gen.begin(); it < ship_for_gen.end(); it++) {
-        auto ssize = it->first;
-        for(int i = 0; i < it->second;) {
+    for (int j = 0; j < 4; j++) {
+        auto ssize = j + 1;
+        for(int i = 0; i < ship_for_gen[j];) {
             temp_ship.x = rand_func() % rows;
             temp_ship.y = rand_func() % cols;
             temp_ship.size = ssize;

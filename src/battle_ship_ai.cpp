@@ -59,7 +59,7 @@ SHOOT_RESULT AI_BattleShip::continue_fire(BattleBoard *enemy_brd) {
         }
     }
     else if (ship_direct == 0) { // horizontal ship hidden
-        int8_t j = 0;
+        int j = 0;
         for(j = col; j >= 0 && enemy_brd->mask(row, j) == 'X'; j--);
         if (j >= 0 && enemy_brd->mask(row, j) == ' ') {
             return enemy_brd->board_fire_at(row, j);
@@ -72,7 +72,7 @@ SHOOT_RESULT AI_BattleShip::continue_fire(BattleBoard *enemy_brd) {
     } 
     else { // vertical ship hidden
         // find upper edge
-        int8_t i = 0;
+        int i = 0;
         for(i = row; i >= 0 && enemy_brd->mask(i, col) == 'X'; i--);
         if (i >= 0 && enemy_brd->mask(i, col) == ' ') {
             return enemy_brd->board_fire_at(i, col);

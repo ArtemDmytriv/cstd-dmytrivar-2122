@@ -129,14 +129,17 @@ def send_user_shot_cell(arduino, x, y):
     return 0
 
 def send_saved_game(arduino):
-    arduino.write("0".encode("utf-8"))
-    arduino.write("0".encode("utf-8"))
-    arduino.write("0".encode("utf-8"))
-
-    arduino.write("0".encode("utf-8"))
-    arduino.write("0".encode("utf-8"))
-    arduino.write("0".encode("utf-8"))
-
-    arduino.write("6".encode("utf-8"))
-
-#s>1 0
+    print("START_SAVE")
+    hw_msg = str()
+    while (hw_msg != SYNC_MSG):
+        hw_msg = arduino.readline().decode("utf-8")[:-2]
+    
+    # test save
+    arduino.write("p1<1>".encode("utf-8"))
+    arduino.write("p2<2>".encode("utf-8"))
+    arduino.write("f1<####           #                                                               #>".encode("utf-8"))
+    arduino.write("m1<                                                                                >".encode("utf-8"))
+    arduino.write("f2<    ####                                                                      # >".encode("utf-8"))
+    arduino.write("m2<                                                                                >".encode("utf-8"))
+    arduino.write("s<6>".encode("utf-8"))
+    print("END_SAVE")
