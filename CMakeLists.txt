@@ -21,7 +21,6 @@ cmake_policy(SET CMP0038 OLD)
 # Link external libs directories (as Arduino-IDE uses it)
 link_directories(${CMAKE_EXTERNAL_LIBS_PATH})
 link_directories(/usr/share/arduino/libraries)
-set(SPI_RECURSE True)
 
 # generate stl lib for use
 set(stl_lib_SRCS ${CMAKE_EXTERNAL_LIBS_PATH}/ArduinoSTL-1.1.0/src)

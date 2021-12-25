@@ -2,6 +2,7 @@ import serial
 from enum import Enum
 import string
 import re
+import os
 
 SYNC_MSG = "#$SYNC$#"
 END_SEQ_MSG = "#$END$#"
@@ -18,8 +19,10 @@ class State(Enum):
     setup_p2_board = 3 
     turns_p1 = 4
     turns_p2 = 5
-    announce_winner = 6
-    wait_response = 7
+    turns_AI1 = 6
+    turns_AI2 = 7
+    announce_winner = 8
+    wait_response = 9
 
 def get_state(arduino) -> State:
     msg = str()
@@ -80,7 +83,7 @@ def print_board(brd : str):
 def print_battleground(brd1 : str, brd2 : str, arrow : str):
     brd1 = brd1[1:-1]
     brd2 = brd2[1:-1]
-
+    os.system("clear")
     print("{} {} {}".format("Player1".center(40), arrow, "Player2".center(40)))
     print()
     print("   ", end="")
