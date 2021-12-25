@@ -11,12 +11,11 @@
 #include "battle_utils.h"
 #endif
 
-#include <cstdlib>
-
-#define BOARD_SIZE 10
+#include <stdlib.h>
 
 #ifndef CLI_COMPILATION
 GAME_STATE current_state = GAME_STATE::wait_sync;
+GAME_STATE save_state = GAME_STATE::wait_sync;
 
 // battle boards
 BattleBoard *brd_p1;
@@ -25,11 +24,17 @@ BattleBoard *brd_p2;
 AI_BattleShip *ai1;
 unsigned char ai1_turns_buffer[BOARD_SIZE * BOARD_SIZE];
 
+const int menu_count = 2;
+const char *menu_list[] = { "New Game", "Load last Game"};
+
+const int modes_count = 3;
+const char *modes_list[] = { "Player vs player", "Player vs AI", "AI vs AI" };
+
 AI_BattleShip *ai2;
 unsigned char ai2_turns_buffer[BOARD_SIZE * BOARD_SIZE];
 
 char board_buffer[BOARD_SIZE * BOARD_SIZE + 2];
-std::vector<std::pair<int, int>> ship_conf =  {{4, 1}, {3, 2}, {2, 3}, {1, 4}};
+int ship_conf[] =  {4, 3, 2, 1};
 
 void setup() {
     randomSeed(analogRead(0));
@@ -47,8 +52,6 @@ void setup() {
     Serial.setTimeout(200);
 }
 
-
-
 String str;
 int x, y = 0;
 GAME_MODES mode = GAME_MODES::player_vs_player;
@@ -59,6 +62,9 @@ PLAYER_TYPE p1 = PLAYER_TYPE::HUMAN_PLAYER_TYPE,
             p2 = PLAYER_TYPE::HUMAN_PLAYER_TYPE;
 
 int winner = -1;
+
+const char **elems;
+int count;
 
 void loop() {
     switch (current_state) {
@@ -72,17 +78,12 @@ void loop() {
             delay(500);
             break;
         }
-        case GAME_STATE::main_menu : {
-            for (const auto &mode : vec_menu) {
-                Serial.println(mode.c_str());
-            }
-            Serial.println(END_SEQ_MSG);
-            current_state = GAME_STATE::wait_response;
-            break;
-        }
+        case GAME_STATE::main_menu :
         case GAME_STATE::mode_menu : {
-            for (const auto &mode : vec_modes) {
-                Serial.println(mode.c_str());
+            elems = (current_state == GAME_STATE::main_menu? menu_list : modes_list);
+            count = (current_state == GAME_STATE::main_menu? menu_count : modes_count);
+            for (int i = 0; i < count; i++) {
+                Serial.println(elems[i]);
             }
             Serial.println(END_SEQ_MSG);
             current_state = GAME_STATE::wait_response;
@@ -93,7 +94,6 @@ void loop() {
             if (Serial.available() > 0) {
                 current_state = send_state(load_save(brd_p1, p1, brd_p2, p2));
             }
-            current_state = send_state(GAME_STATE::main_menu);
             delay(500);
             break;
         }
@@ -140,7 +140,7 @@ void loop() {
         }
         case GAME_STATE::setup_p1_board : {
             brd_p1->board_set_rand_ships(ship_conf, random);
-            std::copy(&brd_p1->field(0,0), &brd_p1->field(0,0) + brd_p1->get_size(), board_buffer + 1);
+            memcpy(board_buffer + 1, &brd_p1->field(0,0), brd_p1->get_size());
             Serial.println(board_buffer); 
             Serial.println(END_SEQ_MSG);
             if (p1 == PLAYER_TYPE::AI_PLAYER_TYPE) {
@@ -152,7 +152,7 @@ void loop() {
         }
         case GAME_STATE::setup_p2_board : {
             brd_p2->board_set_rand_ships(ship_conf, random);
-            std::copy(&brd_p2->field(0,0), &brd_p2->field(0,0) + brd_p2->get_size(), board_buffer + 1);
+            memcpy(board_buffer + 1, &brd_p2->field(0,0), brd_p2->get_size());
             Serial.println(board_buffer);
             Serial.println(END_SEQ_MSG);
             if (p2 == PLAYER_TYPE::AI_PLAYER_TYPE) {
@@ -165,7 +165,13 @@ void loop() {
         case GAME_STATE::turns_p1 : {
             send_both_boards(brd_p1, brd_p2, true);
 
-            while(get_shot_coor(x, y) != EXIT_SUCCESS);
+            int res = 0;
+            while((res = get_shot_coor(x, y)) > 0);
+            if (res == -1) {
+                save_state = current_state;
+                current_state = send_state(GAME_STATE::save_game);
+                break;
+            }
 
             sh_status = brd_p2->board_fire_at(x, y);
             if (sh_status == SHOOT_RESULT::MISSED_HIT) {
@@ -188,7 +194,13 @@ void loop() {
         case GAME_STATE::turns_p2 : {
             send_both_boards(brd_p1, brd_p2, true);
 
-            while(get_shot_coor(x, y) != EXIT_SUCCESS);
+            int res = 0;
+            while((res = get_shot_coor(x, y)) > 0);
+            if (res == -1) {
+                save_state = current_state;
+                current_state = send_state(GAME_STATE::save_game);
+                break;
+            }
 
             sh_status = brd_p1->board_fire_at(x, y);
             if (sh_status == SHOOT_RESULT::MISSED_HIT) {
@@ -250,6 +262,28 @@ void loop() {
                 current_state = send_state(GAME_STATE::turns_AI2);
             }
             break;
+        }
+        case GAME_STATE::save_game : {
+            while (str != CONFIRM_MSG) {
+                Serial.println(static_cast<int>(p1) + 1);
+                str = Serial.readString();
+            }
+            str = "";
+            while (str != CONFIRM_MSG) {
+                Serial.println(static_cast<int>(p2) + 1);
+                str = Serial.readString();
+            }
+            str = "";
+            send_both_boards(brd_p1, brd_p2, false);
+            delay(250);
+            send_both_boards(brd_p1, brd_p2, true);
+            while (str != CONFIRM_MSG) {
+                Serial.println(static_cast<int>(save_state));
+                str = Serial.readString();
+            }
+            str = "";
+            delay(250);
+            current_state = send_state(GAME_STATE::wait_sync);
         }
         case GAME_STATE::announce_winner : {
             send_both_boards(brd_p1, brd_p2, false);
@@ -372,8 +406,8 @@ int main() {
     printf("---START DRIVER---\n");
     srand(time(NULL));
 
-    BattleBoard brd_1(BOARD_SIZE, BOARD_SIZE), 
-        brd_2(BOARD_SIZE, BOARD_SIZE);
+    BattleBoard brd_1(10, 10), 
+        brd_2(10, 10);
 
     game_loop(brd_1, PLAYER_TYPE::AI_PLAYER_TYPE, brd_2, PLAYER_TYPE::AI_PLAYER_TYPE);
 

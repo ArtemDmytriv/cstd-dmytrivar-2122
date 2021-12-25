@@ -52,7 +52,10 @@ while (True):
         x = y = None
         while (x == None or y == None):
             x, y = get_user_shot_cell()
-        send_user_shot_cell(arduino, x, y)
+        if (x < 0):
+            arduino.write("save".encode("utf-8"))
+        else:
+            send_user_shot_cell(arduino, x, y)
         # get next state
     elif (current_state == State.turns_p2):
         brd_1_mask = get_board_serial(arduino)
@@ -62,7 +65,10 @@ while (True):
         x = -1
         while (not x or x < 0):
             x, y = get_user_shot_cell()
-        send_user_shot_cell(arduino, x, y)
+        if (x < 0):
+            arduino.write("save".encode("utf-8"))
+        else:
+            send_user_shot_cell(arduino, x, y)
         # get next state
     elif (current_state == State.turns_AI1):
         brd_1_mask = get_board_serial(arduino)
@@ -74,6 +80,8 @@ while (True):
         brd_2_mask = get_board_serial(arduino)
 
         print_battleground(brd_1_mask, brd_2_mask, "<-AI--")
+    elif (current_state == State.save_game):
+        recv_save_game(arduino)
     elif (current_state == State.announce_winner):
         brd_1_full = get_board_serial(arduino)
         brd_2_full = get_board_serial(arduino)

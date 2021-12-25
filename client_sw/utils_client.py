@@ -4,9 +4,11 @@ import string
 import re
 import os
 import sys
+import time
 
 SYNC_MSG = "#$SYNC$#"
 END_SEQ_MSG = "#$END$#"
+CONFIRM_MSG = "#$CONFIRM$#"
 
 cells = {   '#' : "###",
             'X' : "▓▓▓",
@@ -24,8 +26,9 @@ class State(Enum):
     turns_p2 = 7
     turns_AI1 = 8
     turns_AI2 = 9
-    announce_winner = 10
-    wait_response = 11
+    save_game = 10
+    announce_winner = 11
+    wait_response = 12
 
 def get_state(arduino) -> State:
     msg = str()
@@ -34,7 +37,6 @@ def get_state(arduino) -> State:
         try: 
             if (msg == SYNC_MSG):
                 raise
-            #print("Debug: ", msg)
             msg = int(msg)
             print("Current State: ", State(msg))
             arduino.write(str(msg).encode("utf-8"))
@@ -111,7 +113,9 @@ def print_battleground(brd1 : str, brd2 : str, arrow : str):
 
 def get_user_shot_cell():
     x, y = None, None
-    cell = input("Enter cell for shoot (format example A5 or 5A): ")
+    cell = input("Enter cell for shoot (format example A5 or 5A) or \"save\" for Save game: ")
+    if (cell == "save"):
+        return -1, -1
     try:
         for elem in list(filter(None, re.split('(\d+)', cell)))[:2]:
             if (elem in string.ascii_letters):
@@ -128,18 +132,55 @@ def send_user_shot_cell(arduino, x, y):
     arduino.write("s>{} {}".format(x, y).encode("utf-8"))
     return 0
 
+def recv_head_confirm(arduino):
+    hw_msg = str()
+    while (len(hw_msg) == 0):
+        hw_msg = arduino.readline().decode("utf-8")[:-2]
+    arduino.write(CONFIRM_MSG.encode("utf-8"))
+    return hw_msg
+
+def recv_save_game(arduino):
+    f = open("last_game.save", "w")
+    
+    f.write("p1<{}>\n".format(recv_head_confirm(arduino)))
+    f.write("p2<{}>\n".format(recv_head_confirm(arduino)))
+
+    f.write("f1<{}>\n".format(get_board_serial(arduino)[1:-1]))
+    f.write("f2<{}>\n".format(get_board_serial(arduino)[1:-1]))
+
+    f.write("m1<{}>\n".format(get_board_serial(arduino)[1:-1]))
+    f.write("m2<{}>\n".format(get_board_serial(arduino)[1:-1]))
+
+    f.write("s<{}>\n".format(recv_head_confirm(arduino)))
+
+
+def send_head_confirm(arduino, header_msg : str, conf_msg : str):
+    hw_msg = str()
+    print("SEND", header_msg)
+    while (hw_msg != conf_msg) :
+        arduino.write(header_msg.encode("utf-8"))
+        time.sleep(0.1)
+        hw_msg = arduino.readline().decode("utf-8")[:-2]
+
 def send_saved_game(arduino):
     print("START_SAVE")
     hw_msg = str()
     while (hw_msg != SYNC_MSG):
         hw_msg = arduino.readline().decode("utf-8")[:-2]
-    
+    arduino.write(SYNC_MSG.encode("utf-8"))
     # test save
-    arduino.write("p1<1>".encode("utf-8"))
-    arduino.write("p2<2>".encode("utf-8"))
-    arduino.write("f1<####           #                                                               #>".encode("utf-8"))
-    arduino.write("m1<                                                                                >".encode("utf-8"))
-    arduino.write("f2<    ####                                                                      # >".encode("utf-8"))
-    arduino.write("m2<                                                                                >".encode("utf-8"))
-    arduino.write("s<6>".encode("utf-8"))
+    
+    f = open("last_game.save", "r")
+    # send_head_confirm(arduino, f.readline(), "CONFIRM 
+    send_head_confirm(arduino, f.readline(), "CONFIRM P1")
+    send_head_confirm(arduino, f.readline(), "CONFIRM P2")
+    send_head_confirm(arduino, f.readline(), "CONFIRM F1")
+    send_head_confirm(arduino, f.readline(), "CONFIRM F2")
+    send_head_confirm(arduino, f.readline(), "CONFIRM M1")
+    send_head_confirm(arduino, f.readline(), "CONFIRM M2")
+    send_head_confirm(arduino, f.readline(), "CONFIRM S")
+    time.sleep(0.5)
     print("END_SAVE")
+
+#s>0 6
+#save

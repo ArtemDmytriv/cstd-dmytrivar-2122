@@ -15,6 +15,7 @@ endif()
 set (CMAKE_CXX_STANDARD 14)
 project(${PROJECT_NAME} C CXX)
 
+
 # link_libraries(${ARDUINO_SDK}/libraries)
 
 # Link external libs directories (as Arduino-IDE uses it)
