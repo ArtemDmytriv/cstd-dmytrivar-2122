@@ -1,13 +1,6 @@
 #ifndef _BATTLE_SHIP_H
 #define _BATTLE_SHIP_H
 
-#include <vector>
-#include <map>
-#include <utility>
-
-#define SHIP_MAX_SIZE 4
-#define SHIP_MIN_SIZE 1
-
 enum class PLAYER_TYPE{
     HUMAN_PLAYER_TYPE,
     AI_PLAYER_TYPE
@@ -20,22 +13,6 @@ enum class SHOOT_RESULT {
     SUCCESS_FINISH_HIT
 };
 
-// typedef struct {
-//     // represents 2d square array of field, board with own ships
-//     char **field;
-//     // represents 2d square array of field, will shared to the opponent
-//     char **mask;
-//     // number row/col of the board (size x size)
-//     uint8_t size;
-//     uint8_t ship_counts[SHIP_MAX_SIZE + 1]; // total_ships, 1, 2, 3, 4;
-// } battle_board;
-
-// typedef struct {
-//     uint8_t x, y;
-//     uint8_t size;
-//     bool is_horizontal;
-// } ship;
-
 struct Ship {
     int x, y;
     int size;
@@ -45,15 +22,15 @@ struct Ship {
 class BattleBoard {
 private:
     // represents 2d square array of field, board with own ships
-    char **_field;
+    char *_field;
     // represents 2d square array of field, will shared to the opponent
-    char **_mask;
+    char *_mask;
     // number rows, col of the board
     int rows,
         cols;
 
     int total_ship_count;
-    std::map<int, int> ship_counts;
+    int ship_counts[4];
     
     // ================ Private methods ================
     void board_event_destroyed(int row, int col, bool is_horizontal);
@@ -75,16 +52,19 @@ public:
     }
 
     int get_alive_count(int ship_size) { 
-        return ship_counts.find(ship_size) != ship_counts.end()? ship_counts[ship_size] : -1;
+        return ship_counts[ship_size - 1];
     };
+    void set_alive_ship_count(int ship_size, int count) {
+        ship_counts[ship_size - 1] = count;
+    }
     int get_total_alive_count() const {
         return total_ship_count;
     }
     char mask(int r, int c) const { 
-        return _mask[r][c];
+        return _mask[r * cols + c];
     }
     char field(int r, int c) const {
-        return _field[r][c];
+        return _field[r * cols + c];
     }
     
     void clear(char fill_char = ' ');
@@ -93,14 +73,14 @@ public:
         field(r, c) = ch;
     }
     char& mask(int r, int c) {
-        return _mask[r][c];
+        return _mask[r * cols + c];
     }
     char& field(int r, int c) { 
-        return _field[r][c]; 
+        return _field[r * cols + c]; 
     }
     // ================ Game Behavior methods ================
     int board_set_ship(Ship sh);
-    int board_set_rand_ships(const std::vector<std::pair<int, int>> &ship_gen_counts, long (*rand_func)());
+    int board_set_rand_ships(const int ship_gen_counts[4], long (*rand_func)());
 
     SHOOT_RESULT board_fire_at(int row, int col);
 };

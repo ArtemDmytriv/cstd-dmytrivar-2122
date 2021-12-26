@@ -8,7 +8,6 @@
 
 #include "battle_ship.h"
 #include <cstddef>
-
 #include <iosfwd>
 
 // print both "field" and "mask" of one player board
