@@ -46,6 +46,7 @@ int get_shot_coor(int &x, int &y);
 int send_winner(int winner);
 
 void write_xml_save(BattleBoard *brd1, PLAYER_TYPE &p1);
+void send_ships_count(BattleBoard *brd1);
 
 GAME_STATE load_save(BattleBoard *brd1, PLAYER_TYPE &p1, BattleBoard *brd2, PLAYER_TYPE &p2);
 #endif

@@ -54,6 +54,9 @@ public:
     int get_alive_count(int ship_size) { 
         return ship_counts[ship_size - 1];
     };
+    void set_alive_ship_count(int ship_size, int count) {
+        ship_counts[ship_size - 1] = count;
+    }
     int get_total_alive_count() const {
         return total_ship_count;
     }

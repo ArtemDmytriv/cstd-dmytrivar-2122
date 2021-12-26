@@ -204,6 +204,8 @@ void BattleBoard::board_event_destroyed(int row, int col, bool is_horizontal) {
 }
 
 void BattleBoard::clear(char fill_char) {
+    for (int i = 0; i < 4; i++)
+        this->set_alive_ship_count(i + 1, 0);
     memset(_field, fill_char, rows*cols);
     memset(_mask, fill_char, rows*cols);
 }
@@ -211,7 +213,7 @@ void BattleBoard::clear(char fill_char) {
 int BattleBoard::board_set_rand_ships(const int ship_for_gen[4], long (*rand_func)() ) {
     this->clear();
     Ship temp_ship;
-    for (int j = 0; j < 4; j++) {
+    for (int j = 3; j >= 0; j--) {
         auto ssize = j + 1;
         for(int i = 0; i < ship_for_gen[j];) {
             temp_ship.x = rand_func() % rows;

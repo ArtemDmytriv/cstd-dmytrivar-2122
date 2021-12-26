@@ -82,6 +82,9 @@ while (True):
         print_battleground(brd_1_mask, brd_2_mask, "<-AI--")
     elif (current_state == State.save_game):
         recv_save_game(arduino)
+        current_state = State.wait_sync
+        print("Save succeed")
+        continue
     elif (current_state == State.announce_winner):
         brd_1_full = get_board_serial(arduino)
         brd_2_full = get_board_serial(arduino)
