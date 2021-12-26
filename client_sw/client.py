@@ -1,6 +1,7 @@
 import serial
 import sys
 from utils_client import *
+import db_connector
 
 from serial.serialposix import Serial
 
@@ -62,8 +63,8 @@ while (True):
         brd_2_mask = get_board_serial(arduino)
         print_battleground(brd_1_mask, brd_2_mask, "<--")
         # shoot
-        x = -1
-        while (not x or x < 0):
+        x = y = None
+        while (x == None or y == None):
             x, y = get_user_shot_cell()
         if (x < 0):
             arduino.write("save".encode("utf-8"))
@@ -82,6 +83,7 @@ while (True):
         print_battleground(brd_1_mask, brd_2_mask, "<-AI--")
     elif (current_state == State.save_game):
         recv_save_game(arduino)
+        db_connector.save_game_to_db("last_game.save")
         current_state = State.wait_sync
         print("Save succeed")
         continue
