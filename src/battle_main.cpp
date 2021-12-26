@@ -258,7 +258,6 @@ void loop() {
                 }
             }
             else {
-                //Serial.println("SUCCESS or NOT_ALLOWED");
                 current_state = send_state(GAME_STATE::turns_AI2);
             }
             break;
@@ -274,8 +273,17 @@ void loop() {
                 str = Serial.readString();
             }
             str = "";
+            while (str != CONFIRM_MSG) {
+                send_ships_count(brd_p1);
+                str = Serial.readString();
+            }
+            str = "";
+            while (str != CONFIRM_MSG) {
+                send_ships_count(brd_p2);
+                str = Serial.readString();
+            }
+            str = "";
             send_both_boards(brd_p1, brd_p2, false);
-            delay(250);
             send_both_boards(brd_p1, brd_p2, true);
             while (str != CONFIRM_MSG) {
                 Serial.println(static_cast<int>(save_state));
@@ -283,13 +291,13 @@ void loop() {
             }
             str = "";
             delay(250);
-            current_state = send_state(GAME_STATE::wait_sync);
+            current_state = GAME_STATE::wait_sync;
         }
         case GAME_STATE::announce_winner : {
             send_both_boards(brd_p1, brd_p2, false);
             send_winner(winner);
             delay(10000);
-            current_state = send_state(GAME_STATE::wait_sync);
+            current_state = GAME_STATE::wait_sync;
             break;
         }
     }
