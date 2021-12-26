@@ -98,18 +98,18 @@ GAME_STATE load_save(BattleBoard *brd1, PLAYER_TYPE &p1, BattleBoard *brd2, PLAY
     String str = "";
     while(str.substring(0, 4) != "<p1>") str = Serial.readString();
     Serial.println(F("CONFIRM P1"));
-    p1 = PLAYER_TYPE(get_substring(str, "<p1>", "<\\p1>").toInt() - 1);
+    p1 = PLAYER_TYPE(get_substring(str, "<p1>", "</p1>").toInt() - 1);
 
     while(str.substring(0, 4) != "<p2>") str = Serial.readString();
     Serial.println(F("CONFIRM P2"));
-    p2 = PLAYER_TYPE(get_substring(str, "<p2>", "<\\p2>").toInt() - 1);
+    p2 = PLAYER_TYPE(get_substring(str, "<p2>", "</p2>").toInt() - 1);
 
     while(str.substring(0, 4) != "<s1>") str = Serial.readString();
-    get_ships_count_from_save(get_substring(str, "<s1>", "<\\s1>"), brd1);
+    get_ships_count_from_save(get_substring(str, "<s1>", "</s1>"), brd1);
     Serial.println(F("CONFIRM S1"));
 
     while(str.substring(0, 4) != "<s2>") str = Serial.readString();
-    get_ships_count_from_save(get_substring(str, "<s2>", "<\\s2>"), brd2);
+    get_ships_count_from_save(get_substring(str, "<s2>", "</s2>"), brd2);
     Serial.println(F("CONFIRM S2"));
 
     while(str.substring(0, 4) != "<f1>") str = Serial.readString();
@@ -130,5 +130,5 @@ GAME_STATE load_save(BattleBoard *brd1, PLAYER_TYPE &p1, BattleBoard *brd2, PLAY
 
     while(str.substring(0, 4) != "<st>") str = Serial.readString();
     Serial.println("CONFIRM ST");
-    return GAME_STATE(get_substring(str, "<st>", "<\\st>").toInt());
+    return GAME_STATE(get_substring(str, "<st>", "</st>").toInt());
 }

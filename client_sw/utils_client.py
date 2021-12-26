@@ -142,20 +142,21 @@ def recv_head_confirm(arduino):
 def recv_save_game(arduino):
     f = open("last_game.save", "w")
     
-    f.write("<p1>{}<\p2>\n".format(recv_head_confirm(arduino)))
-    f.write("<p2>{}<\p1>\n".format(recv_head_confirm(arduino)))
+    f.write("<save>\n")
+    f.write("<p1>{}</p1>\n".format(recv_head_confirm(arduino)))
+    f.write("<p2>{}</p2>\n".format(recv_head_confirm(arduino)))
 
-    f.write("<s1>{}<\s1>\n".format(recv_head_confirm(arduino)))
-    f.write("<s2>{}<\s2>\n".format(recv_head_confirm(arduino)))
+    f.write("<s1>{}</s1>\n".format(recv_head_confirm(arduino)))
+    f.write("<s2>{}</s2>\n".format(recv_head_confirm(arduino)))
 
-    f.write("<f1>{}<\\f1>\n".format(get_board_serial(arduino)[1:-1]))
-    f.write("<f2>{}<\\f2>\n".format(get_board_serial(arduino)[1:-1]))
+    f.write("<f1>{}</f1>\n".format(get_board_serial(arduino)[1:-1]))
+    f.write("<f2>{}</f2>\n".format(get_board_serial(arduino)[1:-1]))
 
-    f.write("<m1>{}<\m1>\n".format(get_board_serial(arduino)[1:-1]))
-    f.write("<m2>{}<\m2>\n".format(get_board_serial(arduino)[1:-1]))
+    f.write("<m1>{}</m1>\n".format(get_board_serial(arduino)[1:-1]))
+    f.write("<m2>{}</m2>\n".format(get_board_serial(arduino)[1:-1]))
 
-    f.write("<st>{}<\st>\n".format(recv_head_confirm(arduino)))
-
+    f.write("<st>{}</st>\n".format(recv_head_confirm(arduino)))
+    f.write("</save>\n")
 
 def send_head_confirm(arduino, header_msg : str, conf_msg : str):
     hw_msg = str()
@@ -175,6 +176,7 @@ def send_saved_game(arduino):
     
     f = open("last_game.save", "r")
     # send_head_confirm(arduino, f.readline(), "CONFIRM 
+    f.readline()
     send_head_confirm(arduino, f.readline(), "CONFIRM P1")
     send_head_confirm(arduino, f.readline(), "CONFIRM P2")
 
@@ -187,6 +189,7 @@ def send_saved_game(arduino):
     send_head_confirm(arduino, f.readline(), "CONFIRM M1")
     send_head_confirm(arduino, f.readline(), "CONFIRM M2")
     send_head_confirm(arduino, f.readline(), "CONFIRM ST")
+    f.readline()
     time.sleep(0.5)
     print("END_SAVE")
 
