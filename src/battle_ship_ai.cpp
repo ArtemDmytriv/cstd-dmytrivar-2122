@@ -14,7 +14,6 @@ static inline void swap(unsigned char *val1, unsigned char *val2) {
 } 
 SHOOT_RESULT AI_BattleShip::rand_fire(BattleBoard *enemy_brd) {
     int pos = rand_func() % this->avail_moves_count;
-    char buffer[128];
     this->row = avail_moves[pos] / 10;
     this->col = avail_moves[pos] % 10;
     swap( &this->avail_moves[pos], &this->avail_moves[--this->avail_moves_count] );
@@ -27,29 +26,33 @@ SHOOT_RESULT AI_BattleShip::continue_fire(BattleBoard *enemy_brd) {
         int choose_dir = rand_func() % 4;
         int copy_row = row;
         int copy_col = col;
+        bool is_fire = false;
 
-        switch(choose_dir) {
-            case 0: // up 
-                if (row + 1 < enemy_brd->get_rows() && enemy_brd->mask(row + 1, col) != '0') {
-                    result = enemy_brd->board_fire_at(row + 1, col);
-                    choose_dir = 0; break;
-                }
-            case 1: // down
-                if (row - 1 >= 0 && enemy_brd->mask(row - 1, col) != '0') {
-                    result = enemy_brd->board_fire_at(row - 1, col); 
-                    choose_dir = 1; break;
-                }
-            case 2: // right
-                if (col + 1 < enemy_brd->get_cols() && enemy_brd->mask(row, col + 1) != '0') {
-                    result = enemy_brd->board_fire_at(row, col + 1);
-                    choose_dir = 2; break;
-                }
-            case 3: // left
-                if (col - 1 >=0 && enemy_brd->mask(row, col - 1) != '0') {
-                    result = enemy_brd->board_fire_at(row, col - 1);
-                    choose_dir = 3; break;
-                }   
-        }
+        while(!is_fire)
+            switch(choose_dir) {
+                case 0: // up 
+                    if (row + 1 < enemy_brd->get_rows() && enemy_brd->mask(row + 1, col) != '0') {
+                        result = enemy_brd->board_fire_at(row + 1, col);
+                        choose_dir = 0; is_fire = true; break;
+                    }
+                case 1: // down
+                    if (row - 1 >= 0 && enemy_brd->mask(row - 1, col) != '0') {
+                        result = enemy_brd->board_fire_at(row - 1, col); 
+                        choose_dir = 1; is_fire = true; break;
+                    }
+                case 2: // right
+                    if (col + 1 < enemy_brd->get_cols() && enemy_brd->mask(row, col + 1) != '0') {
+                        result = enemy_brd->board_fire_at(row, col + 1);
+                        choose_dir = 2; is_fire = true; break;
+                    }
+                case 3: // left
+                    if (col - 1 >=0 && enemy_brd->mask(row, col - 1) != '0') {
+                        result = enemy_brd->board_fire_at(row, col - 1);
+                        choose_dir = 3; is_fire = true; break;
+                    }
+                    choose_dir = 0;
+            }
+        
         if (result == SHOOT_RESULT::MISSED_HIT) { // restore col and row when missed
             col = copy_col;
             row = copy_row;

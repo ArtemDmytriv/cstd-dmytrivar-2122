@@ -4,6 +4,7 @@
 #ifdef CLI_COMPILATION
 #include "battle_cli.h"
 #include <ctime>
+#include <iostream>
 #include <vector>
 #else
 #include "Arduino.h"
@@ -304,23 +305,28 @@ void loop() {
 }
 #else
 
+#define BOARD_SIZE 10
+
+unsigned char ai1_turns_buffer[BOARD_SIZE * BOARD_SIZE];
+unsigned char ai2_turns_buffer[BOARD_SIZE * BOARD_SIZE];
+
 long wrap_rand() {
     return rand();
 }
 
 void game_loop(BattleBoard &brd1, PLAYER_TYPE pt1, BattleBoard &brd2, PLAYER_TYPE pt2) {
     bool setup_flag = true;
-    AI_BattleShip ai1(wrap_rand),
-                ai2(wrap_rand);
+    AI_BattleShip ai1(ai1_turns_buffer, wrap_rand),
+                ai2(ai2_turns_buffer, wrap_rand);
     while (setup_flag) {
-        std::vector<std::pair<int,int>> counts = {{1, 4}, {2, 3}, {3, 2}, {4, 1}}; 
+        int counts[4] = {4, 3, 2, 1}; 
         // 1st player set ships  
         brd1.board_set_rand_ships(counts, wrap_rand);
-        printf("Player 1 table\n");
+        std::cout << "Player 1 table\n";
         board_print_both(brd1);
         // 2nd player set ships
         brd2.board_set_rand_ships(counts, wrap_rand);
-        printf("Player 2 table\n");
+        std::cout << "Player 2 table\n";
         board_print_both(brd2);
         
         if (pt1 == PLAYER_TYPE::AI_PLAYER_TYPE) {
