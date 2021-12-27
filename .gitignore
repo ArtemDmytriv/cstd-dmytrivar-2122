@@ -4,3 +4,4 @@ bin/**
 battle_ship
 libraries/**
 tests/build/**
+client_sw/__py**
